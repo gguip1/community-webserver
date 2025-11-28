@@ -1,8 +1,9 @@
 name: WebServer CD - DEV
 on:
-  push:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["WebServer CI - DEV"]
+    types:
+      - completed
     paths-ignore:
       - "docs/**"
       - "**.md"
@@ -22,9 +23,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Deploy to EC2 with Docker
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.AWS_EC2_SSH_KEY }} ubuntu@${{ secrets.AWS_EC2_DEV_WEB_SERVER_DNS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.AWS_EC2_DEV_WEB_SERVER_DNS }} << 'EOF'
             aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/dev/webserver/docker-compose.yml ./docker-compose.yml
             docker-compose -f docker-compose.yml up -d --build
           EOF
