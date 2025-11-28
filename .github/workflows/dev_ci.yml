@@ -22,6 +22,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
+      - name: Upload Docker Compose file to S3
+        run: |
+          aws s3 cp docker-compose.yml s3://ktb-community-devops/dev/webserver/docker-compose.yml
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
