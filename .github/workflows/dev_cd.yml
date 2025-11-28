@@ -1,4 +1,5 @@
 name: WebServer CD - DEV
+
 on:
   workflow_run:
     workflows: ["WebServer CI - DEV"]
@@ -11,6 +12,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-24.04-arm
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout repository
