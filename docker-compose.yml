@@ -1,0 +1,23 @@
+services:
+  webserver-nginx:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: community-webserver-nginx
+    restart: unless-stopped
+    networks: 
+      - community-network
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+
+volumes:
+  nginx_html:
+    driver: local
+
+networks:
+  community-network:
+    driver: bridge
