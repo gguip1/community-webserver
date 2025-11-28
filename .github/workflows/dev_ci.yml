@@ -46,7 +46,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/a3y4e2t5/ktb-community/fe-registry:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/a3y4e2t5/ktb-community/fe-registry:latest
+            ${{ steps.login-ecr.outputs.registry }}/a3y4e2t5/ktb-community/webserver-registry:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/a3y4e2t5/ktb-community/webserver-registry:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
