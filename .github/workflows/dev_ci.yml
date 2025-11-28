@@ -24,7 +24,7 @@ jobs:
 
       - name: Upload Docker Compose file to S3
         run: |
-          aws s3 cp docker-compose.yml s3://ktb-community-devops/dev/webserver/docker-compose.yml
+          aws s3 cp docker-compose.yml s3://${{ secrets.AWS_S3_BUCKET_NAME }}/dev/webserver/docker-compose.yml
 
       - name: Login to Amazon ECR
         id: login-ecr
