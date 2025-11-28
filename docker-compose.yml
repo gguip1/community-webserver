@@ -1,7 +1,7 @@
 services:
-  webserver-nginx:
-    image: public.ecr.aws/a3y4e2t5/ktb-community/fe-registry:latest
-    container_name: community-webserver-nginx
+  community-webserver:
+    image: public.ecr.aws/a3y4e2t5/ktb-community/webserver-registry:latest
+    container_name: community-webserver
     restart: unless-stopped
     networks: 
       - community-network
@@ -11,10 +11,6 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
-
-volumes:
-  nginx_html:
-    driver: local
 
 networks:
   community-network:
