@@ -5,6 +5,8 @@ on:
     workflows: ["WebServer CI - DEV"]
     types:
       - completed
+    branches:
+      - dev
     paths-ignore:
       - "docs/**"
       - "**.md"
