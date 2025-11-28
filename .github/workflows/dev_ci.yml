@@ -1,4 +1,4 @@
-name: WebServer CI - PROD
+name: WebServer CI - DEV
 on:
   push:
     branches:
@@ -28,6 +28,9 @@ jobs:
         with:
           registry-type: public
           mask-password: true
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_REGION: us-east-1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
