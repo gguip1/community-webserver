@@ -31,6 +31,6 @@ jobs:
       - name: Deploy to EC2 with Docker
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.AWS_EC2_DEV_WEB_SERVER_DNS }} << 'EOF'
-            aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/dev/webserver/docker-compose.yml ./docker-compose.yml
-            docker-compose -f docker-compose.yml up -d --build
+            aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/dev/webserver/docker-compose.yml /home/ubuntu/docker-compose.yml
+            sudo su - ubuntu -c "cd /home/ubuntu && docker compose pull && docker compose up -d && docker image prune -f"
           EOF
