@@ -4,10 +4,17 @@
 
 {$DOMAIN_NAME} {
 	encode zstd gzip
-	reverse_proxy frontend:3000
-}
 
-api.{$DOMAIN_NAME} {
-	encode zstd gzip
-	reverse_proxy backend:8080
+	handle_path /api/* {
+		reverse_proxy backend:8080
+	}
+
+	handle_path /uploads/* {
+		root * /srv/uploads
+		file_server
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
 }
