@@ -1,4 +1,4 @@
-name: Deploy runtime bundle to prod EC2
+name: "Legacy AWS: deploy runtime bundle to prod EC2"
 
 on:
   workflow_dispatch:

@@ -1,9 +1,8 @@
-name: Deploy nginx to prod EC2
+name: "Legacy AWS: deploy nginx to prod EC2"
 
 on:
-  workflow_run:
-    workflows: ["Sync prod artifacts to S3"]
-    types: [completed]
+  workflow_dispatch:
+
 
 permissions:
   id-token: write
@@ -17,7 +16,6 @@ jobs:
   deploy:
     name: Deploy nginx
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Configure AWS credentials (OIDC)
