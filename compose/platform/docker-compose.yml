@@ -1,0 +1,16 @@
+name: wepick-platform
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: wepick_jenkins
+    ports:
+      # Jenkins must not be exposed directly to the Internet.
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+    name: wepick_jenkins_home

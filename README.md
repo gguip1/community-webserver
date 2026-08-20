@@ -1,91 +1,49 @@
 # wepick-infra
 
-wepick 서비스의 AWS 인프라 코드 및 배포 스크립트.
-Terraform 3-레이어 구조(bootstrap → shared → prod)로 관리하며, GitHub Actions OIDC로 배포한다.
+Wepick의 단일 운영 저장소입니다. 프론트엔드와 백엔드는 각자 CI로 테스트된 불변 이미지를 GHCR에 발행하고, 이 저장소가 해당 이미지의 운영 승격, 호스트 런타임, Jenkins CD를 관리합니다.
 
-```mermaid
-flowchart LR
-    User(["User"])
+## 현재 운영 목표
 
-    subgraph EC2["EC2  ·  Docker Compose"]
-        nginx["nginx\n:80/:443"]
-        backend["backend\n:8080"]
-        frontend["frontend\n:3000"]
-        mysql[("mysql\n:3306")]
-    end
-
-    S3_IMG[("S3\nimages")]
-    CF["CloudFront"]
-    ECR[("ECR")]
-    S3_ART[("S3\nartifacts")]
-    SSM[("SSM\nParam Store")]
-    GHA["GitHub\nActions"]
-
-    User -->|"HTTPS"| nginx
-    nginx -->|"/api"| backend
-    nginx -->|"/"| frontend
-    backend --> mysql
-    backend <-->|"presigned URL"| S3_IMG
-    S3_IMG --> CF
-
-    GHA -->|"image push"| ECR
-    GHA -->|"artifacts sync"| S3_ART
-    GHA -->|"SSM SendCommand"| EC2
-    ECR -->|"docker pull"| EC2
-    S3_ART -->|"s3 sync"| EC2
-    SSM -->|".env 생성"| EC2
+```text
+GitHub Actions (FE/BE CI) → GHCR immutable images
+                              ↓
+wepick-infra promotion manifest → Jenkins CD → Docker Compose host
+                                              ├─ Caddy (80/443, automatic TLS)
+                                              ├─ frontend
+                                              ├─ backend
+                                              └─ MySQL named volume
 ```
 
----
+- 운영 런타임: 단일 Docker host
+- 프록시: Caddy
+- 이미지 registry: GHCR
+- CD control plane: self-hosted Jenkins (localhost only)
+- 비밀값: 초기에는 Jenkins Credentials와 호스트의 미추적 environment file, 추후 HashiCorp Vault 검토
+- 데이터베이스: infra Compose가 독립 MySQL service와 named volume을 소유
 
-## 구조
+## Layout
 
-```
-terraform/envs/
-├── bootstrap/   # tfstate S3 버킷 + GitHub OIDC Provider (로컬 state)
-├── shared/      # IAM Role, ECR, OIDC Deploy Role (계정 공유 자원)
-└── prod/        # VPC, EC2, S3, CloudFront, SSM 파라미터
+| Path | Purpose |
+|---|---|
+| `compose/prod` | Caddy, frontend, backend, MySQL production topology |
+| `compose/platform` | Jenkins control-plane topology |
+| `caddy` | Public routing and TLS configuration |
+| `environments/prod` | Versioned image-promotion template; real `.env` stays untracked |
+| `scripts` | Host deployment and rollback commands |
+| `jenkins` | Jenkins security boundary and bootstrap notes |
+| `docs/host-architecture.md` | Current host deployment decisions and deferred work |
+| `terraform`, `docker`, `nginx`, legacy workflows | Historical AWS deployment assets; not the host deployment target |
 
-scripts/
-└── deploy-on-ec2.sh   # SSM SendCommand로 EC2에서 실행하는 배포 스크립트
-
-docker/prod/
-└── docker-compose.yml
-
-nginx/prod/
-└── wepick.conf        # envsubst로 도메인 치환하는 nginx 설정 템플릿
-
-.github/workflows/
-├── compose-sync.yml   # docker/prod, nginx/prod, scripts 변경 시 artifacts S3 업로드
-├── deploy-nginx.yml   # compose-sync 성공 시 nginx 자동 재기동
-└── deploy.yml         # 수동 서비스 배포 (all / backend / frontend / nginx / mysql)
-```
-
-**레이어 의존 관계:**
-
-```
-bootstrap (로컬 state)
-    └── shared (S3 state, bootstrap output 참조)
-            └── prod (S3 state, shared output 참조)
-```
-
----
-
-## 로컬 설정
-
-레포 클론 후 한 번만 실행한다:
+## Validation
 
 ```bash
-git config core.hooksPath .githooks
+docker compose --env-file environments/prod/.env.example -f compose/prod/docker-compose.yml config -q
+docker compose -f compose/platform/docker-compose.yml config -q
+docker run --rm -e DOMAIN_NAME=wepick.example.com -e ACME_EMAIL=admin@example.com \
+  -v "$PWD/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+  caddy:2.10-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 ```
 
-`terraform/` 변경을 main에 직접 커밋하면 pre-commit 훅이 차단한다.
+## AWS legacy
 
----
-
-## 문서
-
-| 문서 | 내용 |
-|------|------|
-| [아키텍처](docs/architecture.md) | 인프라 구조도 + 초기 배포 시퀀스 다이어그램 |
-| [초기 배포 절차](docs/initial-deployment.md) | 아무것도 없는 AWS 계정에서 prod까지 8단계 |
+AWS resources are not destroyed in this branch. Terraform, EC2/SSM/ECR delivery scripts, and existing AWS workflows remain preserved for historical reference until the host deployment path is accepted and exercised.
