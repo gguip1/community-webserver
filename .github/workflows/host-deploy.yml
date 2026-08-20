@@ -23,6 +23,8 @@ jobs:
   deploy:
     name: Deploy approved images to production host
     runs-on: [self-hosted, linux, wepick-prod]
+    # Do not permit a workflow dispatched from an unprotected branch to reach production.
+    if: github.ref == 'refs/heads/main'
     environment: production
     steps:
       - uses: actions/checkout@v4

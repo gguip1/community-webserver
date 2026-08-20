@@ -9,7 +9,7 @@ A single host runs Caddy, frontend, backend, and MySQL through Docker Compose. C
 - `wepick-fe` and `wepick-be`: GitHub-hosted Actions CI tests and publishes immutable GHCR images.
 - `wepick-infra`: declares the runtime topology, deployment/rollback scripts, and self-hosted runner CD workflow.
 - The production host: pulls already-built images and never builds application source.
-- The production runner: must only accept protected `main`/manual infra deployment jobs, never fork or arbitrary PR jobs.
+- The production runner executes commands as the dedicated `wepick-deploy` Linux account. It must only accept protected `main`/manual infra deployment jobs, never fork or arbitrary PR jobs. Docker access makes this account effectively host-privileged.
 
 ## CD flow
 
