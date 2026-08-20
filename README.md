@@ -30,7 +30,8 @@ GitHub Actions self-hosted runner (infra CD) → Docker Compose host
 | `environments/prod` | Immutable image and runtime environment templates |
 | `runner` | Self-hosted runner security and bootstrap guide |
 | `scripts` | Host deployment and rollback commands |
-| `docs/host-architecture.md` | Current host deployment decisions and deferred work |
+| `docs/host-architecture.md` | Current host deployment decisions and runtime contract |
+| `docs/first-host-deployment.md` | M0 deployment prerequisites and production smoke checklist |
 | `terraform`, `docker`, `nginx`, legacy workflows | Historical AWS deployment assets; not the host deployment target |
 
 ## Validation

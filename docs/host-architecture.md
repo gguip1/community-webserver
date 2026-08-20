@@ -23,8 +23,26 @@ A single host runs Caddy, frontend, backend, and MySQL through Docker Compose. C
 
 - Public reachability: direct 80/443 port forwarding versus Cloudflare Tunnel.
 - Automatic promotion: begin with protected manual dispatch; add an approved image-promotion manifest or repository dispatch only after the initial deployment path is exercised.
-- Local image storage requires backend support; the current backend still implements S3 presigned uploads and cannot be switched by Compose alone.
+- Local image storage is now the active target: backend writes to the named `uploads_data` volume at `/data/uploads`; Caddy mounts it read-only at `/srv/uploads` and serves `/uploads/*`. The future S3/MinIO decision is isolated behind the backend `ImageStorage` interface.
 - Automated off-host MySQL backups are intentionally deferred, but `wepick_mysql_data` must never be removed by deployment commands.
+
+## Runtime environment contract
+
+The host owns `/etc/wepick/prod.env` with mode `600`, owned by `wepick-deploy`. It is passed to Compose using `--env-file`; only variable names and placeholders belong in Git.
+
+```env
+DOMAIN_NAME=wepick.example.com
+ACME_EMAIL=admin@example.com
+FE_IMAGE=ghcr.io/w-gain/wepick-fe
+BE_IMAGE=ghcr.io/w-gain/wepick-be
+MYSQL_DATABASE=wepick
+MYSQL_USER=wepick
+MYSQL_PASSWORD=replace-with-real-secret
+MYSQL_ROOT_PASSWORD=replace-with-different-real-secret
+SESSION_COOKIE_SAME_SITE=lax
+```
+
+`FE_IMAGE_TAG` and `BE_IMAGE_TAG` are immutable deployment inputs added by the protected deployment workflow. `GHCR_PULL_TOKEN` is a GitHub `production` Environment secret, not a host runtime variable. The Compose file injects `IMAGE_STORAGE_LOCAL_ROOT=/data/uploads` and `IMAGE_PUBLIC_PREFIX=/uploads` into backend; they are stable topology values rather than secrets.
 
 ## AWS status
 
