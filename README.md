@@ -1,5 +1,11 @@
 # wepick-infra
 
+## 저장소 역할과 제품 설계
+
+이 저장소는 **실행 환경·배포·운영**를 관리합니다. 제품·정책·ERD·화면 정의서·와이어프레임·공통 API 설계의 기준은 [wepick-product](https://github.com/W-Gain/wepick-product)입니다. [문서 관리 규칙](https://github.com/W-Gain/wepick-product/blob/main/docs/working/repository-and-document-guide.md)을 따르며 설계 원본을 복사하지 않습니다.
+
+아래 구현 설명은 기존 구현에 관한 기록이며 최신 제품 요구사항을 대신하지 않습니다. 현재 동작은 코드·검증 결과로 확인하고, 목표와의 차이는 [Product 전환 작업](https://github.com/W-Gain/wepick-product/blob/main/docs/working/documentation-backlog.md)에 연결합니다.
+
 Wepick의 단일 운영 저장소입니다. 프론트엔드와 백엔드는 GitHub-hosted Actions CI로 테스트된 불변 이미지를 GHCR에 발행하고, 이 저장소의 self-hosted Actions runner가 production CD를 실행합니다.
 
 ## 현재 운영 목표
@@ -46,3 +52,12 @@ docker run --rm -e DOMAIN_NAME=wepick.example.com -e ACME_EMAIL=admin@example.co
 ## AWS legacy
 
 AWS resources are not destroyed in this branch. Terraform, EC2/SSM/ECR delivery scripts, and existing AWS workflows remain preserved for historical reference. Legacy AWS workflows are manual-only and are not part of host CD.
+
+## 문서
+
+- [제품·공통 시스템 설계](https://github.com/W-Gain/wepick-product)
+- [Host 구조와 환경 계약](docs/host-architecture.md)
+- [최초 배포·검증 절차](docs/first-host-deployment.md)
+- [Runner 안내](runner/README.md)
+- [HQ에서 이전한 2026-08-20 운영 기록](docs/history/hq-2026-08-20.md) — 현재 운영 검증 결과가 아님
+- [작업 지침](AGENTS.md)
